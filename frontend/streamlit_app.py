@@ -3,43 +3,29 @@ import requests
 
 st.title("🌦 Agentic Weather Assistant")
 
-city = st.text_input("City")
-query = st.text_input("Question")
+query = st.text_input(
+    "Ask anything about the weather",
+    placeholder="e.g. What's the weather, forecast and any alerts in Hyderabad?",
+)
 
-if st.button("Ask"):
+if st.button("Ask", disabled=not query.strip()):
 
-    status = st.status(
-        "Processing Request...",
-        expanded=True
-    )
-
-    status.write("Fetching weather information...")
+    status = st.status("Processing request...", expanded=True)
 
     response = requests.post(
         "http://localhost:8000/weather/ask-stream",
-        json={
-            "city": city,
-            "query": query
-        },
-        stream=True
+        json={"query": query},
+        stream=True,
     )
 
-    status.write("Generating AI response...")
+    status.write("Fetching weather data and generating response...")
 
     answer = ""
-
     placeholder = st.empty()
 
-    for chunk in response.iter_content(
-        chunk_size=1,
-        decode_unicode=True
-    ):
-
+    for chunk in response.iter_content(chunk_size=1, decode_unicode=True):
         if chunk:
             answer += chunk
             placeholder.markdown(answer)
 
-    status.update(
-        label="Completed",
-        state="complete"
-    )
+    status.update(label="Completed", state="complete")
